@@ -8,12 +8,11 @@
                     <li><a href="#">Vanguard IV</a></li>
                     <li><a href="#">Water Ingress Alarm</a></li>
                 </ul>
-                <div class="navHeader">Industrial Products</div>
+                <div class="navHeader"><a href="#/industrialproducts" style="color:#FFF">Industrial Products</a></div>
                 <ul>
-                    <li><a href="#">MetriLink (Wireless)</a></li>
-                    <li><a href="#">Ultrasonic / Pressure TM</a></li>
-                    <li><a href="#">Metritape</a></li>
-                    <li><a href="#">Displays</a></li>
+                    <li v-for="(cat, idx) in categories" :key="idx">
+                        <a @click="viewProduct(cat)" href="#/productCategory">{{cat.Title}}</a>
+                    </li>
                 </ul>
                 <div class="navHeader">JOWA AB</div>
                 <ul>
@@ -31,7 +30,8 @@
         </div>
         <div style="display: flex; flex:1; flex-flow: column;">
             <div style="width: 100%; float:left; height: 50px; border-bottom: #CCC 1px solid">
-                <h1>{{this.$route.name}}</h1>
+                <h1 v-if="this.$route.path !== '/productCategory'">{{this.$route.name}}</h1>
+                <h1 v-else-if="product">{{product.Title}}</h1>
             </div>
             <div v-if="this.$route.path == '/marineproducts'" style="padding: 0px 30px 100px 30px;">
                 <div style="display: flex; text-align: center; flex: 1; margin: 0px 0px 40px 0px; justify-content:center;">
@@ -52,24 +52,16 @@
                     JOWA USA, Inc. supplies reliable level gauging solutions to marine customers throughout the world. With more than 50 years experience in marine tank gauging, our systems have proven to be reliable, affordable and effective solutions for demanding gauging applications aboard hundreds of vessels. These include deep cargo tanks, ballast, draft, fuel, oil and water aboard tankers, barges containerships, cruise ships, drilling rigs, military vessels and floating dry docks.
                 </p>
             </div>
+            <div v-if="this.$route.path == '/productCategory'" style="padding: 0px 10px 100px 10px;">
+                <div v-html="product.detailsCompiled"></div>
+
+                <!-- <p style="margin-top: 180px;"> Detailed information about products can be accessed below by clicking on the text or its accompanying image. Product data sheets, manuals and brochure are available for download on our product reference library as well as on their individual pages. For additional information or a quote, contact JOWA USA. </p> -->
+            </div>
             <div v-if="this.$route.path == '/industrialproducts'" style="padding: 0px 10px 100px 10px;">
                 <p>With nearly Four decades of experience in level gauging, JOWA USA, Inc. supplies reliable level solutions to industrial and municipal customers throughout the world. These solutions include a family of Metritape gauging products, wireless instrumentation, ultrasonic level sensors, pressure transmitter level sensors and display instruments.</p>
                 <div v-for="(productCat, idx) in categories" :key="idx">
                     <div style="text-align: center;">
-                        <a href="#/productCategory" style="display: inline-block; padding-top: 10px;">{{productCat.Title}}</a>
-                        <div style="margin-top: 15px;text-align: left; border-bottom: #CCC 1px solid; float: left; padding-bottom: 20px;">
-                            <img width="100" style="float:left;" :src="`http://73.114.184.243:1337${productCat.Image.url}`" alt="">
-                            <p style="float:left; width: 770px; margin: 0px 0px 0px 25px;">{{productCat.description}}</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- <p style="margin-top: 180px;"> Detailed information about products can be accessed below by clicking on the text or its accompanying image. Product data sheets, manuals and brochure are available for download on our product reference library as well as on their individual pages. For additional information or a quote, contact JOWA USA. </p> -->
-            </div>
-            <div v-if="this.$route.path == '/productCategory'" style="padding: 0px 10px 100px 10px;">
-                <p>With nearly Four decades of experience in level gauging, JOWA USA, Inc. supplies reliable level solutions to industrial and municipal customers throughout the world. These solutions include a family of Metritape gauging products, wireless instrumentation, ultrasonic level sensors, pressure transmitter level sensors and display instruments.</p>
-                <div v-for="(productCat, idx) in categories" :key="idx">
-                    <div style="text-align: center;">
-                        <a href="#/productCategory" style="display: inline-block; padding-top: 10px;">{{productCat.Title}}</a>
+                        <a href="#/productCategory" @click="viewProduct(productCat)" style="display: inline-block; padding-top: 10px;">{{productCat.Title}}</a>
                         <div style="margin-top: 15px;text-align: left; border-bottom: #CCC 1px solid; float: left; padding-bottom: 20px;">
                             <img width="100" style="float:left;" :src="`http://73.114.184.243:1337${productCat.Image.url}`" alt="">
                             <p style="float:left; width: 770px; margin: 0px 0px 0px 25px;">{{productCat.description}}</p>
@@ -83,17 +75,29 @@
 </template>
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
+import marked from 'marked';
 
 @Component
 export default class ProductPage extends Vue{
   categories = [];
+  product = null;
+
   mounted(){
     fetch('http://73.114.184.243:1337/product-categories')
       .then(result=>result.json())
       .then(data => {
         this.categories = data;
-        console.log(data);
       })
+      if(!this.product){
+          this.$router.push('/industrialproducts')
+      }
+  }
+
+  private viewProduct(cat){
+      this.product = cat;
+      this.$router.push('/productCategory')
+      console.log(cat);
+      this.product.detailsCompiled = marked(cat.Details)
   }
 }
 </script>
