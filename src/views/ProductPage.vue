@@ -79,8 +79,8 @@ import marked from 'marked';
 
 @Component
 export default class ProductPage extends Vue{
-  categories = [];
-  product = null;
+  categories: any = [];
+  product: any = null;
 
   mounted(){
     fetch('http://73.114.184.243:1337/product-categories')
@@ -93,7 +93,7 @@ export default class ProductPage extends Vue{
       }
   }
 
-  private viewProduct(cat){
+  private viewProduct(cat: any){
       this.product = cat;
       this.$router.push('/productCategory')
       console.log(cat);
